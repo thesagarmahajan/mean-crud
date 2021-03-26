@@ -1,27 +1,17 @@
-const express = require('express');
-const router = express.Router();
-const mongoose = require('mongoose');
-const multer = require('multer');
-const upload = multer();
+const conf = require("../config/config.js");
+const req = conf.require;
 
-let userSchema = new mongoose.Schema({
-    full_name:String,
-    email:String,
-    phone:String,
-    password:String
-});
+let userSchema = new req.mongoose.Schema(conf.db.collections.users);
 
-const userModel = mongoose.model('user', userSchema, 'users');
+const userModel = req.mongoose.model('users', userSchema);
+const user = new userModel();
 
-const constr = "mongodb://localhost:27017/shamProject";
+req.mongoose.connect(conf.db.dburl, {useNewUrlParser: true, useUnifiedTopology: true});
 
-mongoose.connect(constr, {useNewUrlParser: true, useUnifiedTopology: true});
+req.router.use(req.upload.array());
+req.router.use(req.express.static('public'));
 
-router.use(upload.array());
-router.use(express.static('public'));
-
-router.post("/createUser", function(req, res){
-    var user = new userModel();
+req.router.post("/createUser", function(req, res){
     // console.log(req.body);
     // res.status(200).json({"status_message":"HI"});
     for(key in req.body){
@@ -39,7 +29,7 @@ router.post("/createUser", function(req, res){
     });
 });
 
-router.get("/getAllUsers", function(req,res){
+req.router.get("/getAllUsers", function(req,res){
     userModel.find(function(err,data){
         if(err){
             res.status(500).json({"status_message":err.toString()});
@@ -51,4 +41,4 @@ router.get("/getAllUsers", function(req,res){
     });
 });
 
-module.exports= router;
+module.exports= req.router;
